@@ -7,6 +7,7 @@
 
 int main() { 
     //TEST CZY DZIA£AJ¥ BIBLIOTEKI -- TRZEBA USUNAC
+    //John - dzila gg
 
     if (!glfwInit()) return -1;
 
