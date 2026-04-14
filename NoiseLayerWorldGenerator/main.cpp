@@ -47,6 +47,9 @@ int main() {
 	glfwSetMouseButtonCallback(window, InputManager::mouseButtonCallback);
 	glfwSetCursorPosCallback(window, InputManager::cursorPositionCallback);	
 
+	//W³¹czenie testu g³êbokoœci co pozwala na poprawne renderowanie obiektów w 3D z uwzglêdnieniem ich odleg³oœci od kamery
+	glEnable(GL_DEPTH_TEST);
+
 	//Inicjalizaca sceny startowej programu
 	SceneManager sceneManager;
 	sceneManager.setScene(std::make_unique<WorldGeneratorScene>());

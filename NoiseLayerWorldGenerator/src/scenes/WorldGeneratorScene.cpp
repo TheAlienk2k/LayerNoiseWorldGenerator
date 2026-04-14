@@ -20,23 +20,24 @@ void WorldGeneratorScene::onEnter()
     mainShader = std::make_unique<Shader>("shaders/test.vert", "shaders/test.frag");
     floorShader = std::make_unique<Shader>("shaders/test.vert", "shaders/test.frag");
 
-    std::vector<float> vertices = {
-        
-         0.5f,  0.0f,  0.5f,
-        -0.5f,  0.0f,  0.5f,
-         0.0f,  0.0f, -0.5f,
+    std::vector<float> cubeVertices = {
+    -0.5f, -0.5f,  0.5f, 
+     0.5f, -0.5f,  0.5f, 
+     0.5f,  0.5f,  0.5f, 
+    -0.5f,  0.5f,  0.5f, 
+    -0.5f, -0.5f, -0.5f, 
+     0.5f, -0.5f, -0.5f, 
+     0.5f,  0.5f, -0.5f, 
+    -0.5f,  0.5f, -0.5f  
+    };
 
-         -0.5f,  0.0f,  0.5f,
-          0.0f,  0.8f,  0.0f, 
-          0.0f,  0.0f, -0.5f,
-
-           0.5f,  0.0f,  0.5f,
-           0.0f,  0.0f, -0.5f,
-           0.0f,  0.8f,  0.0f, 
- 
-            0.5f,  0.0f,  0.5f,
-            0.0f,  0.8f,  0.0f, 
-           -0.5f,  0.0f,  0.5f
+    std::vector<unsigned int> cubeIndices = {
+    0, 1, 2, 2, 3, 0, 
+    1, 5, 6, 6, 2, 1, 
+    7, 6, 5, 5, 4, 7, 
+    4, 0, 3, 3, 7, 4, 
+    4, 5, 1, 1, 0, 4, 
+    3, 2, 6, 6, 7, 3  
     };
 
     std::vector<float> floorVertices = {
@@ -51,7 +52,7 @@ void WorldGeneratorScene::onEnter()
 
     floorMesh = std::make_unique<Mesh>(floorVertices);
 
-    testMesh = std::make_unique<Mesh>(vertices);
+    testMesh = std::make_unique<Mesh>(cubeVertices, cubeIndices);
     //---
 }
 

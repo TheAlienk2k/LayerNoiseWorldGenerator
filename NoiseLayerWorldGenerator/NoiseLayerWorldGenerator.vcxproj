@@ -37,6 +37,8 @@
     <ClCompile Include="src\scenes\Scene.cpp" />
     <ClCompile Include="src\scenes\WorldGeneratorScene.cpp" />
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\world\BlockType.cpp" />
+    <ClCompile Include="src\world\Chunk.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Camera.h" />
@@ -48,6 +50,8 @@
     <ClInclude Include="include\scenes\Scene.h" />
     <ClInclude Include="include\scenes\WorldGeneratorScene.h" />
     <ClInclude Include="include\Shader.h" />
+    <ClInclude Include="include\world\BlockType.h" />
+    <ClInclude Include="include\world\Chunk.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\test.frag" />
