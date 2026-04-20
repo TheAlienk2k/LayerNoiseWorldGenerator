@@ -8,15 +8,26 @@ void WorldGeneratorScene::onEnter()
     if (window) {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
-    else
-    {
-		// Jeśli okno nie jest dostępne w przyszłości dodać implementacje obsługi tego przypadku np przez rzucenie wyjątku.                                                         !!!!!!!!!!!!!!!!!!!!
-    }
 
 	// Inicjalizacja kamery na pozycji (0, 0, 1) - tymczasowa wartość później bedzie trzeba ja ustalać wzgledem wytworzonego terenu
 	camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 1.0f));
 
 	//TYMCZASOWO - test ładowania shaderów
+    BlockDatabase::init();
+    myChunk = std::make_unique<Chunk>();
+
+    for (int x = 0; x < 16; x++) {
+        for (int z = 0; z < 16; z++) {
+            myChunk->setBlock(x, 0, z, 1);
+        }
+    }
+
+    for (int y = 1; y < 5; y++) {
+        myChunk->setBlock(8, y, 8, 2);
+    }
+
+    myChunk->generateMesh();
+
     mainShader = std::make_unique<Shader>("shaders/test.vert", "shaders/test.frag");
     floorShader = std::make_unique<Shader>("shaders/test.vert", "shaders/test.frag");
 
@@ -41,13 +52,13 @@ void WorldGeneratorScene::onEnter()
     };
 
     std::vector<float> floorVertices = {
-        -50.0f, -1.0f, -50.0f,
-         50.0f, -1.0f, -50.0f,
-         50.0f, -1.0f,  50.0f,
+        -50.0f, -1.0f, -50.0f, 
+         50.0f, -1.0f,  50.0f, 
+         50.0f, -1.0f, -50.0f, 
 
-         50.0f, -1.0f,  50.0f,
-         -50.0f, -1.0f,  50.0f,
-         -50.0f, -1.0f, -50.0f
+          50.0f, -1.0f,  50.0f,
+         -50.0f, -1.0f, -50.0f,
+         -50.0f, -1.0f,  50.0f 
     };
 
     floorMesh = std::make_unique<Mesh>(floorVertices);
@@ -87,6 +98,8 @@ void WorldGeneratorScene::render()
 	mainShader->setMatrix4("view", view);
 
     //TYMCZASOWO - test ładowania shaderów
+
+
     if (floorShader) {
         floorShader->useShader(); 
 
@@ -100,6 +113,12 @@ void WorldGeneratorScene::render()
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         if (floorMesh) floorMesh->draw();
+
+        glUniform3f(colorLoc, 0.7f, 0.7f, 0.4f);
+        if (myChunk) {
+            myChunk->render();
+        }
+
     }
 
     if (mainShader) {
@@ -133,7 +152,7 @@ void WorldGeneratorScene::onImGuiRender()
     ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
     ImGui::SetNextWindowBgAlpha(0.3f);
 
-    if (ImGui::Begin("HUD", nullptr, window_flags)) {
+    if (ImGui::Begin("CORDHUD", nullptr, window_flags)) {
         if (camera) {
             ImGui::Text("X: %.2f", camera.get()->position.x);
             ImGui::SameLine();

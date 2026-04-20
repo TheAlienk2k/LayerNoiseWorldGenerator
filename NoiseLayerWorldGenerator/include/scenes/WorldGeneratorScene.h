@@ -8,6 +8,8 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "Input.h"
+#include "world/BlockType.h"
+#include "world/Chunk.h"
 #include "managers/WindowManager.h"
 
 class WorldGeneratorScene : public Scene
@@ -27,6 +29,8 @@ private:
 	std::unique_ptr<Camera> camera;
 
 	//TYMCZASOWO - test ładowania shaderów
+	std::unique_ptr<Chunk> myChunk;
+
 	std::unique_ptr<Shader> mainShader;
 	std::unique_ptr<Mesh> testMesh; 
 

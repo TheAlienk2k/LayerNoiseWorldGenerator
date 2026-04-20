@@ -49,6 +49,11 @@ int main() {
 
 	//W³¹czenie testu g³êbokoœci co pozwala na poprawne renderowanie obiektów w 3D z uwzglêdnieniem ich odleg³oœci od kamery
 	glEnable(GL_DEPTH_TEST);
+	
+	//W³¹czenie cullingu co pozwala na pomijanie rysowania œcianek które s¹ skierowane do ty³u wzglêdem kamery
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK); 
+	glFrontFace(GL_CCW); // Ustawienie kierunku wierzcho³ków przeciwnych do ruchu wskazówek zegara
 
 	//Inicjalizaca sceny startowej programu
 	SceneManager sceneManager;
