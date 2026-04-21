@@ -18,23 +18,23 @@ vector2 gradients[8] = {
 	{-1,1},
 };
 
-// KONSTRUKTOR - > TWORZE PERMUTACJE, Jeden seed -> jedno potasowanie. Czyli Ka¿dy seed bêdzie odpowiada³ jednemu potasowaniu tabeli Permutacji (PermutationPerlin) 
+// KONSTRUKTOR - > TWORZE PERMUTACJE, Jeden seed -> jedno potasowanie. Czyli Kazdy seed bedzie odpowiadal jednemu potasowaniu tabeli Permutacji (PermutationPerlin) 
 PerlinNoise2D::PerlinNoise2D(unsigned seed, float frequency, float amplitude, int octaves, float freqchange, float ampchange) : frequencyPerlinNoise(frequency), amplitudePerlinNoise(amplitude), octavesPerlinNoise(octaves), frequencyChange(freqchange), amplitudeChange(ampchange)
 {
 	PermutationPerlin.resize(256);
 	std::iota(PermutationPerlin.begin(), PermutationPerlin.end(), 0);
 
-	// Na podstawie seeda tasujemy nasza Tabele permutacji 
+	// NA PODSTAWIE SEEDA TASUJEMY NASZA TABELE PERMUTACJI 
 	std::default_random_engine engine(seed);
 	std::shuffle(PermutationPerlin.begin(), PermutationPerlin.end(), engine);
 
-	// Powielanie Tablicy (standard Perlin) -> Kopiowanie Tablicy [0, ..., 255, 0, ..... 255] 
+	// POWIELANIE TABLIY PERMUTACJI -> [0, ..., 255, 0, ..... 255], CHRONI PRZED WYJSCIEM POZA ROZMIAR WEKTORA
 	PermutationPerlin.insert(PermutationPerlin.end(), PermutationPerlin.begin(), PermutationPerlin.end());
 }
 
 
 
-float PerlinNoise2D::smoothInterpolation(float t, float x, float y) 
+float PerlinNoise2D::smoothInterpolation(float t, float x, float y) ///// x,y - dotproducty poszczegolnych gridow, t - W ZALEZNOSCI ALBO ix/iy 
 {
 	return x + t * t * t * (t * (6.0f * t - 15.0f) + 10.0f) * (y - x);
 }
@@ -53,14 +53,14 @@ float PerlinNoise2D::PerlinNoiseFunction(float x, float y)
 		x *= frequency;
 		y *= frequency;
 
-		/////// LICZYMY WSPÓ£RZÊDNE GRIDÓW (x0,y0), (x0,y1), (x1,y1), (x1,y0) /////
-		int x0 = static_cast<int>(floor(x)); // Floor(x) -> ZWRACA WARTOSC CALKOWITA
+		/////// LICZYMY WSPOLRZEDNE GRIDÓW (x0,y0), (x0,y1), (x1,y1), (x1,y0) /////
+		int x0 = static_cast<int>(floor(x)); // Floor(x) -> ZWRACA WARTOSC CALKOWITA Z LICZBY ZMIENNOPRZECINKOWEJ
 		int y0 = static_cast<int>(floor(y)); // 
 		int x1 = x0 + 1; 
 		int y1 = y0 + 1; 
 
-		float ix = x - x0; // CZESC DZIESIETNA LICZBY xF
-		float iy = y - y0; // CZESC DZIESIETNA LICZBY yF
+		float ix = x - x0; // CZESC DZIESIETNA LICZBY x (x=2,4 -> x0 = 2 -> ix = 0,4)
+		float iy = y - y0; // CZESC DZIESIETNA LICZBY y
 
 
 		///  PRZYDZIELAM  KAZDEMU GRID PUNKTOWI LICZBE Z ZAKRESU 0-255 
@@ -69,7 +69,7 @@ float PerlinNoise2D::PerlinNoiseFunction(float x, float y)
 		int p01 = PermutationPerlin[(PermutationPerlin[x0 & 255] + y1) & 255];
 		int p11 = PermutationPerlin[(PermutationPerlin[x1 & 255] + y1) & 255];
 
-		/// TERAZ WYBIERAM JEDEN Z SIEDMIU GRADIENTOW na PODSTAWIE liczby p
+		/// TERAZ WYBIERAM JEDEN Z SIEDMIU GRADIENTOW na PODSTAWIE LICZBY p
 		vector2 g00 = gradients[p00 & 7]; 
 	    vector2 g10 = gradients[p10 & 7];
 	    vector2 g01 = gradients[p01 & 7];
@@ -98,9 +98,9 @@ float PerlinNoise2D::PerlinNoiseFunction(float x, float y)
 	return TotalNoiseValue;
   }
 
-// DotProduct -> Iloczyn Skalarny Wektorów. 
-// gx,gy => Wspó³rzêdne wektora gradientu. 
-// x,y => wspó³rzêdne wektora od Wspó³rzêdnej Gridu do naszego punkt (x,y)
+// DOTPRODUCT -> ILOCZYN SKALARNY WEKTOROW. 
+// gx,gy => WSPOLRZEDNE WEKTORA GRADIENTU. 
+// x,y => WSPOLRZEDNE WEKTORA OD PUNKTU GRID DO NASZEGO PUNKTA (ix,iy) -> CZYLI CZESCI DZIESIETNEJ PUNKTU (x,y)
 float PerlinNoise2D::DotProduct(float gx, float gy, float x, float y) 
 {
 	return gx * x + gy * y;

@@ -15,8 +15,8 @@ public:
 	float frequencyPerlinNoise; // 
 	float amplitudePerlinNoise; //
 	int octavesPerlinNoise; // Ilosc Oktaw -> bardziej 
-	float frequencyChange; // Decyduje jak zmienia siê frequency po ka¿dej oktawie
-	float amplitudeChange; // Decyduje jak zmienia siê amplitude po ka¿dej oktawie
+	float frequencyChange; // Decyduje jak zmienia sie frequency po kazdej oktawie
+	float amplitudeChange; // Decyduje jak zmienia sie amplitude po kazdej oktawie
 
 	PerlinNoise2D(unsigned seed=1234, float frequency=1.0f, float amplitude=1.0f, int ocatves=4, float freqchange=2.0f, float ampchange=0.5f); // KONSTRUKTOR
 	float PerlinNoiseFunction(float x, float y);	
