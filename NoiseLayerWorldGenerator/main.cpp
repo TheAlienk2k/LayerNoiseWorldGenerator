@@ -5,6 +5,8 @@
 #include "imgui_impl_opengl3.h"
 #include <iostream>
 
+
+#include "PerlinNoise2D.h"
 int main() { 
     //TEST CZY DZIA£AJ¥ BIBLIOTEKI -- TRZEBA USUNAC
     //John - dzila gg
@@ -59,5 +61,6 @@ int main() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
     glfwTerminate();
-    return 0;
+   
+   
 }
