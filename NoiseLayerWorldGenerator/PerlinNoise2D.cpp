@@ -43,24 +43,26 @@ float PerlinNoise2D::PerlinNoiseFunction(float x, float y)
 {
 	float TotalNoiseValue = 0.0;
 	float frequency = frequencyPerlinNoise;
+	float StandardFrequency = frequency;
 	float amplitude = amplitudePerlinNoise;
 	int octaves = octavesPerlinNoise;
 	float freqchange = frequencyChange;
 	float ampchange = amplitudeChange;
+
 	for (int i = 0; i < octaves; i++)
 	{
-		//// PRZESKALOWYWUJE PUNKT PRZY UZYCIU FREQUENCY ->
-		x *= frequency;
-		y *= frequency;
+		//// PRZESKALOWYWUJE PUNKT PRZY UZYCIU FREQUENCY 
+		float fx = x * frequency;
+		float fy = y * frequency;
 
 		/////// LICZYMY WSPOLRZEDNE GRIDÓW (x0,y0), (x0,y1), (x1,y1), (x1,y0) /////
-		int x0 = static_cast<int>(floor(x)); // Floor(x) -> ZWRACA WARTOSC CALKOWITA Z LICZBY ZMIENNOPRZECINKOWEJ
-		int y0 = static_cast<int>(floor(y)); // 
+		int x0 = static_cast<int>(floor(fx)); // Floor(x) -> ZWRACA WARTOSC CALKOWITA Z LICZBY ZMIENNOPRZECINKOWEJ
+		int y0 = static_cast<int>(floor(fy)); // 
 		int x1 = x0 + 1; 
 		int y1 = y0 + 1; 
 
-		float ix = x - x0; // CZESC DZIESIETNA LICZBY x (x=2,4 -> x0 = 2 -> ix = 0,4)
-		float iy = y - y0; // CZESC DZIESIETNA LICZBY y
+		float ix = fx - x0; // CZESC DZIESIETNA LICZBY x (x=2,4 -> x0 = 2 -> ix = 0,4)
+		float iy = fy - y0; // CZESC DZIESIETNA LICZBY y
 
 
 		///  PRZYDZIELAM  KAZDEMU GRID PUNKTOWI LICZBE Z ZAKRESU 0-255 
