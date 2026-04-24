@@ -13,6 +13,8 @@ private:
 	int columnX;
 	int columnZ;
 
+	bool isMeshGenerated = false;
+
 	std::vector<std::unique_ptr<Chunk>> chunks;
 
 public:
@@ -29,5 +31,7 @@ public:
 
 	int getX() const;
 	int getZ() const;
+
+	bool hasMesh() const;
 };
 

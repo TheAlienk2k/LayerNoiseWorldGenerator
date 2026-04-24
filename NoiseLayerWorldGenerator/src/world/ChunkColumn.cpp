@@ -87,6 +87,7 @@ void ChunkColumn::generateMeshes(const World* world)
 		chunks[i]->generateMesh(topNeighbor, bottomNeighbor, frontNeighbor, backNeighbor, leftNeighbor, rightNeighbor);
 	}
 
+	isMeshGenerated = true;
 }
 
 void ChunkColumn::render(Shader* shader) const
@@ -109,4 +110,9 @@ int ChunkColumn::getX() const
 int ChunkColumn::getZ() const 
 { 
 	return columnZ; 
+}
+
+bool ChunkColumn::hasMesh() const 
+{
+	return isMeshGenerated;
 }

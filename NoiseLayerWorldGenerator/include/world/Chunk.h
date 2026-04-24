@@ -18,6 +18,9 @@ private:
 	//wskaźnik na siatkę reprezentującą sekcję
 	std::unique_ptr<Mesh> mesh;
 
+	// Flaga informująca czy siatka została wygenerowana.
+	bool isMeshGenerated = false;
+
 	// Funkcja pomocnicza do pobierania ID bloku z sąsiedniej sekcji.
 	// Ta funkcja jest używana podczas generowania siatki aby sprawdzić widoczność ścianek na granicy sekcji
 	BlockID getBlockFromNeighbor(Chunk* neighbor, int x, int y, int z) const;
@@ -40,4 +43,6 @@ public:
 
 	//Funkcja renderująca siatkę sekcji. Ta funkcja powinna być wywoływana podczas renderowania świata
 	void render() const;
+
+	bool hasMesh() const;
 };

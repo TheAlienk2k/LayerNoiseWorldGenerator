@@ -164,6 +164,7 @@ void Chunk::generateMesh(Chunk* topNeighbor, Chunk* bottomNeighbor, Chunk* front
 						indices.push_back(indexOffset + 0);
 						indices.push_back(indexOffset + 1);
 						indices.push_back(indexOffset + 2);
+
 						indices.push_back(indexOffset + 2);
 						indices.push_back(indexOffset + 3);
 						indices.push_back(indexOffset + 0);
@@ -176,6 +177,9 @@ void Chunk::generateMesh(Chunk* topNeighbor, Chunk* bottomNeighbor, Chunk* front
 
 			}
 		}
+		
+		// Po zakończeniu iteracji przez wszystkie bloki ustawiamy flagę isMeshGenerated na true aby oznaczyć że siatka została wygenerowana
+		isMeshGenerated = true;
 	}
 
 	// Jeśli wygenerowano jakieś wierzchołki to tworzymy siatkę na podstawie tych wierzchołków i indeksów
@@ -191,5 +195,10 @@ void Chunk::render() const
 	if (mesh) {
 		mesh->draw();
 	}
+}
+
+bool Chunk::hasMesh() const
+{
+	return isMeshGenerated;
 }
 

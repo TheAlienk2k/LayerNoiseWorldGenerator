@@ -10,60 +10,14 @@ void WorldGeneratorScene::onEnter()
     }
 
 	// Inicjalizacja kamery na pozycji (0, 0, 1) - tymczasowa wartość później bedzie trzeba ja ustalać wzgledem wytworzonego terenu
-	camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 1.0f));
+	camera = std::make_unique<Camera>(glm::vec3(8.0f, 40.0f, 8.0f));
 
-	//TYMCZASOWO - test ładowania shaderów
+	//TYMCZASOWO - test renderowania śiwata
     BlockDatabase::init();
-    myChunk = std::make_unique<Chunk>();
-
-    for (int x = 0; x < 16; x++) {
-        for (int z = 0; z < 16; z++) {
-            myChunk->setBlock(x, 0, z, 1);
-        }
-    }
-
-    for (int y = 1; y < 5; y++) {
-        myChunk->setBlock(8, y, 8, 2);
-    }
-
-    myChunk->generateMesh();
 
     mainShader = std::make_unique<Shader>("shaders/test.vert", "shaders/test.frag");
-    floorShader = std::make_unique<Shader>("shaders/test.vert", "shaders/test.frag");
-
-    std::vector<float> cubeVertices = {
-    -0.5f, -0.5f,  0.5f, 
-     0.5f, -0.5f,  0.5f, 
-     0.5f,  0.5f,  0.5f, 
-    -0.5f,  0.5f,  0.5f, 
-    -0.5f, -0.5f, -0.5f, 
-     0.5f, -0.5f, -0.5f, 
-     0.5f,  0.5f, -0.5f, 
-    -0.5f,  0.5f, -0.5f  
-    };
-
-    std::vector<unsigned int> cubeIndices = {
-    0, 1, 2, 2, 3, 0, 
-    1, 5, 6, 6, 2, 1, 
-    7, 6, 5, 5, 4, 7, 
-    4, 0, 3, 3, 7, 4, 
-    4, 5, 1, 1, 0, 4, 
-    3, 2, 6, 6, 7, 3  
-    };
-
-    std::vector<float> floorVertices = {
-        -50.0f, -1.0f, -50.0f, 
-         50.0f, -1.0f,  50.0f, 
-         50.0f, -1.0f, -50.0f, 
-
-          50.0f, -1.0f,  50.0f,
-         -50.0f, -1.0f, -50.0f,
-         -50.0f, -1.0f,  50.0f 
-    };
-
-    floorMesh = std::make_unique<Mesh>(floorVertices);
-
-    testMesh = std::make_unique<Mesh>(cubeVertices, cubeIndices);
+    world = std::make_unique<World>();
+    worldRenderer = std::make_unique<WorldRenderer>();
     //---
 }
 
@@ -89,53 +43,35 @@ void WorldGeneratorScene::onUpdate(float deltaTime)
 
     glm::vec2 delta = Input::getMouseDelta();
     camera->processMouseMovement(delta.x, delta.y);
+
+    if (world) {
+        world->updateWorld(camera->position);
+    }
 }
 
 void WorldGeneratorScene::render()
 {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	// Ustawienie macierzy widoku kamery w shaderze
 	glm::mat4 view = camera->getViewMatrix();
 	mainShader->setMatrix4("view", view);
 
     //TYMCZASOWO - test ładowania shaderów
+    if (!world || !worldRenderer || !mainShader) return;
+
+	GLFWwindow* window = WindowManager::getInstance().getMainWindow();
+
+    if (window) {
+        int width;
+        int height;
+        glfwGetFramebufferSize(window, &width, &height);
+        float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
 
-    if (floorShader) {
-        floorShader->useShader(); 
-
-        int colorLoc = glGetUniformLocation(floorShader->getID(), "objectColor");
-        glUniform3f(colorLoc, 0.2f, 0.5f, 0.2f); 
-
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-        floorShader->setMatrix4("projection", projection);
-        floorShader->setMatrix4("view", camera->getViewMatrix());
-        floorShader->setMatrix4("model", glm::mat4(1.0f));
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        if (floorMesh) floorMesh->draw();
-
-        glUniform3f(colorLoc, 0.7f, 0.7f, 0.4f);
-        if (myChunk) {
-            myChunk->render();
-        }
-
-    }
-
-    if (mainShader) {
-        mainShader->useShader();
-        glLineWidth(3.0f);
-
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-        mainShader->setMatrix4("projection", projection);
-        mainShader->setMatrix4("view", camera->getViewMatrix());
-
-        float time = (float)glfwGetTime();
-        glm::mat4 model = glm::rotate(glm::mat4(1.0f), time, glm::vec3(0.0f, 1.0f, 0.0f));
-        mainShader->setMatrix4("model", model);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        if (testMesh) testMesh->draw();
-        glLineWidth(1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+        worldRenderer->render(*world, *camera, *mainShader, aspectRatio);
     }
     //---
 }
@@ -163,6 +99,7 @@ void WorldGeneratorScene::onImGuiRender()
             ImGui::Text(" | ");
             ImGui::SameLine();
             ImGui::Text("Z: %.2f", camera.get()->position.z);
+            ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
         }
         ImGui::Separator();
     }

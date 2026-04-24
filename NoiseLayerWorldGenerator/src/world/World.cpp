@@ -8,8 +8,32 @@ void World::addChunkColumn(int x, int z)
 {
 	ChunkCords position = { x, z };
 
-	if (columnsMap.find(position) == columnsMap.end()) {
-		columnsMap[position] = std::make_unique<ChunkColumn>(x, z);
+	std::cout << "+[WORLD] Generuje kolumne: " << x << ", " << z << std::endl;
+	auto column = std::make_unique<ChunkColumn>(x, z);
+
+   //-----------------------TYMCZASOWO------------------------------------
+	for (int lx = 0; lx < Chunk::CHUNK_SIZE; lx++) {
+		for (int lz = 0; lz < Chunk::CHUNK_SIZE; lz++) {
+			for (int y = 0; y < 10; y++) { // Wszystko do Y=10 to bloki
+				column->setBlock(lx, y, lz, 1); // 1 = Kamień/Ziemia
+			}
+		}
+	}
+	//---------------------------------------------------------------------
+
+	ChunkColumn* columnPtr = column.get();
+	columnsMap[position] = std::move(column);
+
+	columnPtr->generateMeshes(this);
+
+	int xShift[] = { 1, -1, 0, 0 };
+	int zShift[] = { 0, 0, 1, -1 };
+
+	for (int i = 0; i < 4; i++) {
+		ChunkColumn* neighbor = getChunkColumn(x + xShift[i], z + zShift[i]);
+		if (neighbor) {
+			neighbor->generateMeshes(this);
+		}
 	}
 }
 
@@ -23,6 +47,11 @@ ChunkColumn* World::getChunkColumn(int x, int z) const
 	}
 
 	return nullptr;
+}
+
+const std::map<ChunkCords, std::unique_ptr<ChunkColumn>>& World::getColumnsMap() const 
+{
+	return columnsMap;
 }
 
 void World::setBlock(int x, int y, int z, BlockID blockID)
@@ -83,5 +112,22 @@ void World::render(Shader* shader) const
 {
 	for (auto const& it : columnsMap) {
 		it.second->render(shader);
+	}
+}
+
+void World::updateWorld(glm::vec3 cameraPosition)
+{
+	int cameraColumnX = static_cast<int>(std::floor(cameraPosition.x / (Chunk::CHUNK_SIZE)));
+	int cameraColumnZ = static_cast<int>(std::floor(cameraPosition.z / (Chunk::CHUNK_SIZE)));
+
+	for (int x = -config.renderDistance; x <= config.renderDistance; x++) {
+		for (int z = -config.renderDistance; z <= config.renderDistance; z++) {
+
+			ChunkCords coords = { cameraColumnX + x, cameraColumnZ + z };
+
+			if (columnsMap.find(coords) == columnsMap.end()) {
+				addChunkColumn(coords.x, coords.z);
+			}
+		}
 	}
 }

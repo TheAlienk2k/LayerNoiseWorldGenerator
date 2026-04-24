@@ -42,6 +42,7 @@
     <ClCompile Include="src\world\ChunkColumn.cpp" />
     <ClCompile Include="src\world\World.cpp" />
     <ClCompile Include="src\world\WorldConfig.cpp" />
+    <ClCompile Include="src\world\WorldRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Camera.h" />
@@ -58,6 +59,7 @@
     <ClInclude Include="include\world\ChunkColumn.h" />
     <ClInclude Include="include\world\World.h" />
     <ClInclude Include="include\world\WorldConfig.h" />
+    <ClInclude Include="include\world\WorldRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\test.frag" />
