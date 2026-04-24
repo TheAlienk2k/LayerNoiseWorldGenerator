@@ -14,6 +14,11 @@ glm::mat4 Camera::getViewMatrix() const
 	return glm::lookAt(position, position + front, up);
 }
 
+glm::mat4 Camera::getProjectionMatrix(float aspectRatio) const
+{
+	return glm::perspective(glm::radians(config.fov), aspectRatio, config.viewBegin, config.viewDistance);
+}
+
 void Camera::processKeyboardInput(Camera_Movement direction, float deltaTime)
 {
 	// Prędkość ruchu jest skalowana przez deltaTime, aby zapewnić płynny ruch niezależnie od liczby klatek na sekundę
@@ -31,12 +36,12 @@ void Camera::processKeyboardInput(Camera_Movement direction, float deltaTime)
 void Camera::processMouseMovement(float xoffset, float yoffset)
 {
 	// Aktualizujemy kąty Yaw(odchylenia - X) i Pitch(pochylenie - Y) na podstawie ruchu myszy
-	Yaw += xoffset;										
-	Pitch += yoffset;
+	yaw += xoffset;										
+	pitch += yoffset;
 
 	// Ograniczamy kąt Pitch, aby uniknąć efektu "przewrócenia" kamery, gdy patrzy prosto w górę lub w dół
-	if (Pitch > 89.0f) { Pitch = 89.0f; }
-	if (Pitch < -89.0f) { Pitch = -89.0f; }
+	if (pitch > 89.0f) { pitch = 89.0f; }
+	if (pitch < -89.0f) { pitch = -89.0f; }
 
 	// Po aktualizacji kątów aktualizujemy wektory kamery aby zachować poprawną orientację
 	updateCameraVectors();
@@ -46,9 +51,9 @@ void Camera::updateCameraVectors()
 {
 	//Obliczamy nowy wektor kierunku patrzenia kamery (front) na podstawie aktualnych kątów Yaw i Pitch. Używamy funkcji trygonometrycznych aby przekształcić kąty na wektor kierunku w przestrzeni 3D
 	glm::vec3 newFront;
-	newFront.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-	newFront.y = sin(glm::radians(Pitch));
-	newFront.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+	newFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	newFront.y = sin(glm::radians(pitch));
+	newFront.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 
 	//Normalizujemy wektor front aby zapewnić że ma długość 1 co jest ważne dla poprawnych obliczeń ruchu i orientacji kamery
 	front = glm::normalize(newFront);

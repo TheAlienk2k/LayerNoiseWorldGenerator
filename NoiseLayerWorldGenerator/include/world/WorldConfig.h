@@ -1,0 +1,14 @@
+#pragma once
+
+struct WorldConfig
+{
+	float fov = 45.0f;
+	float viewBegin = 0.1f;
+	float viewDistance = 1000.0f;
+
+	int worldHeightInChunks = 16;
+	int renderDistance = 12;
+};
+
+extern WorldConfig config;
+

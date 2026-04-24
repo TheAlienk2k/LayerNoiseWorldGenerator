@@ -1,5 +1,5 @@
 #pragma once
-#include "scenes\Scene.h"
+#include "scenes/Scene.h"
 #include <iostream>
 #include "imgui.h"
 #include <glm/gtc/matrix_transform.hpp>
@@ -8,6 +8,8 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "Input.h"
+#include "world/World.h"
+#include "world/WorldRenderer.h"
 #include "managers/WindowManager.h"
 
 class WorldGeneratorScene : public Scene
@@ -28,10 +30,9 @@ private:
 
 	//TYMCZASOWO - test ładowania shaderów
 	std::unique_ptr<Shader> mainShader;
-	std::unique_ptr<Mesh> testMesh; 
 
-	std::unique_ptr<Shader> floorShader;
-	std::unique_ptr<Mesh> floorMesh;
+	std::unique_ptr<World> world;
+	std::unique_ptr<WorldRenderer> worldRenderer;
 	//---
 };
 

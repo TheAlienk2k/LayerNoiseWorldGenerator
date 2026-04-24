@@ -5,12 +5,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
 
+#include "world/WorldConfig.h"
+
 class Camera
 {
 private:
 	// Kąty Yaw i Pitch określają orientację kamery w przestrzeni. Yaw kontroluje obrót wokół osi Y, a Pitch kontroluje obrót wokół osi X.
-	float Yaw = -90.0f;
-	float Pitch = 0.0f;
+	float yaw = -90.0f;
+	float pitch = 0.0f;
 
 	// Aktualizuje wektory right i up na podstawie aktualnej pozycji i orientacji kamery
 	void updateCameraVectors();
@@ -39,6 +41,9 @@ public:
 
 	// Metoda do uzyskania macierzy widoku kamery która będzie używana w shaderze
 	glm::mat4 getViewMatrix() const;
+
+	// Metoda do uzyskania macierzy projekcji kamery która będzie używana w shaderze.
+	glm::mat4 getProjectionMatrix(float aspectRatio) const;
 
 	// Metoda do przetwarzania wejścia z klawiatury i aktualizacji pozycji kamery
 	void processKeyboardInput(Camera_Movement direction, float deltaTime);
