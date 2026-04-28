@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="PerlinNoise2D.cpp" />
     <ClCompile Include="src\glad\glad.c" />
     <ClCompile Include="src\imgui\imgui.cpp" />
     <ClCompile Include="src\imgui\imgui_demo.cpp" />
@@ -64,6 +64,9 @@
   <ItemGroup>
     <None Include="shaders\test.frag" />
     <None Include="shaders\test.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PerlinNoise2D.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

@@ -5,10 +5,8 @@
 #include "imgui_impl_opengl3.h"
 #include <iostream>
 
-#include "managers\SceneManager.h"
-#include "managers\InputManager.h"
-#include "scenes\WorldGeneratorScene.h"
 
+#include "PerlinNoise2D.h"
 int main() { 
     
 	//Inicjalizacja GLFW
@@ -22,7 +20,7 @@ int main() {
 	}
 	glfwMakeContextCurrent(window);
 
-	//Ustawienie g³ównego okna w WindowManagerze
+	//Ustawienie gÅ‚Ã³wnego okna w WindowManagerze
 	WindowManager::getInstance().setMainWindow(window);
 
 	//Inicjalizacja GLAD
@@ -38,22 +36,22 @@ int main() {
 	//Ustawienie stylu ImGui na ciemny
 	ImGui::StyleColorsDark();
 
-	//Inicjalizacja backendów ImGui dla GLFW i OpenGL3
+	//Inicjalizacja backendÃ³w ImGui dla GLFW i OpenGL3
 	ImGui_ImplGlfw_InitForOpenGL(window, true); 
 	ImGui_ImplOpenGL3_Init("#version 330");
 
-	//Ustawienie callbacków dla klawiatury i myszy które bêd¹ aktualizowaæ stany klawiszy i przycisków myszy w InputManagerze co pozwoli na ³atwe sprawdzanie tych stanów w logice gry
+	//Ustawienie callbackÃ³w dla klawiatury i myszy ktÃ³re bÄ™dÄ… aktualizowaÄ‡ stany klawiszy i przyciskÃ³w myszy w InputManagerze co pozwoli na Å‚atwe sprawdzanie tych stanÃ³w w logice gry
 	glfwSetKeyCallback(window, InputManager::keyCallback);
 	glfwSetMouseButtonCallback(window, InputManager::mouseButtonCallback);
 	glfwSetCursorPosCallback(window, InputManager::cursorPositionCallback);	
 
-	//W³¹czenie testu g³êbokoœci co pozwala na poprawne renderowanie obiektów w 3D z uwzglêdnieniem ich odleg³oœci od kamery
+	//WÅ‚Ä…czenie testu gÅ‚Ä™bokoÅ›ci co pozwala na poprawne renderowanie obiektÃ³w w 3D z uwzglÄ™dnieniem ich odlegÅ‚oÅ›ci od kamery
 	glEnable(GL_DEPTH_TEST);
 	
-	//W³¹czenie cullingu co pozwala na pomijanie rysowania œcianek które s¹ skierowane do ty³u wzglêdem kamery
+	//WÅ‚Ä…czenie cullingu co pozwala na pomijanie rysowania Å›cianek ktÃ³re sÄ… skierowane do tyÅ‚u wzglÄ™dem kamery
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK); 
-	glFrontFace(GL_CCW); // Ustawienie kierunku wierzcho³ków przeciwnych do ruchu wskazówek zegara
+	glFrontFace(GL_CCW); // Ustawienie kierunku wierzchoÅ‚kÃ³w przeciwnych do ruchu wskazÃ³wek zegara
 
 	//Inicjalizaca sceny startowej programu
 	SceneManager sceneManager;
@@ -61,17 +59,17 @@ int main() {
 
 	float lastFrameTime = 0.0f;
 
-	//G³ówna pêtla
+	//GÅ‚Ã³wna pÄ™tla
 	while (!glfwWindowShouldClose(window)) {
-		//Obliczanie czasu deltaTime dla aktualizacji logiki gry i animacji co pozwala na p³ynne dzia³anie gry niezale¿nie od liczby klatek na sekundê
+		//Obliczanie czasu deltaTime dla aktualizacji logiki gry i animacji co pozwala na pÅ‚ynne dziaÅ‚anie gry niezaleÅ¼nie od liczby klatek na sekundÄ™
 		float currentFrame = static_cast<float>(glfwGetTime());
 		float deltaTime = currentFrame - lastFrameTime;
 		lastFrameTime = currentFrame;
 
-		//Pobranie danych wejœciowych i przetworzenie zdarzeñ systemowych takich jak zamkniêcie okna, zmiana rozmiaru itp Ta funkcja jest kluczowa dla interakcji u¿ytkownika z aplikacj¹ i musi byæ wywo³ywana w ka¿dej klatce
+		//Pobranie danych wejÅ›ciowych i przetworzenie zdarzeÅ„ systemowych takich jak zamkniÄ™cie okna, zmiana rozmiaru itp Ta funkcja jest kluczowa dla interakcji uÅ¼ytkownika z aplikacjÄ… i musi byÄ‡ wywoÅ‚ywana w kaÅ¼dej klatce
 		glfwPollEvents();
 
-		//Czyszczenie ekranu i przygotowanie do renderowania (czyszczenie bufora kolorów i bufora g³êbokoœci)
+		//Czyszczenie ekranu i przygotowanie do renderowania (czyszczenie bufora kolorÃ³w i bufora gÅ‚Ä™bokoÅ›ci)
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -79,11 +77,14 @@ int main() {
 		sceneManager.update(deltaTime);
 		sceneManager.render();
 
-		//Wyœwietlanie renderowanej sceny na ekranie
+		//WyÅ›wietlanie renderowanej sceny na ekranie
 		glfwSwapBuffers(window);
 	}
 
-	//Zwalnianie zasobów i zamykniêcie okna
-	glfwTerminate();
-    return 0;
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    glfwTerminate();
+   
+   
 }
