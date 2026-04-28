@@ -29,6 +29,41 @@
     <ClCompile Include="src\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="src\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Input.cpp" />
+    <ClCompile Include="src\managers\InputManager.cpp" />
+    <ClCompile Include="src\managers\SceneManager.cpp" />
+    <ClCompile Include="src\managers\WindowManager.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\scenes\Scene.cpp" />
+    <ClCompile Include="src\scenes\WorldGeneratorScene.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\world\BlockType.cpp" />
+    <ClCompile Include="src\world\Chunk.cpp" />
+    <ClCompile Include="src\world\ChunkColumn.cpp" />
+    <ClCompile Include="src\world\World.cpp" />
+    <ClCompile Include="src\world\WorldConfig.cpp" />
+    <ClCompile Include="src\world\WorldRenderer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Camera.h" />
+    <ClInclude Include="include\Input.h" />
+    <ClInclude Include="include\managers\InputManager.h" />
+    <ClInclude Include="include\managers\SceneManager.h" />
+    <ClInclude Include="include\managers\WindowManager.h" />
+    <ClInclude Include="include\Mesh.h" />
+    <ClInclude Include="include\scenes\Scene.h" />
+    <ClInclude Include="include\scenes\WorldGeneratorScene.h" />
+    <ClInclude Include="include\Shader.h" />
+    <ClInclude Include="include\world\BlockType.h" />
+    <ClInclude Include="include\world\Chunk.h" />
+    <ClInclude Include="include\world\ChunkColumn.h" />
+    <ClInclude Include="include\world\World.h" />
+    <ClInclude Include="include\world\WorldConfig.h" />
+    <ClInclude Include="include\world\WorldRenderer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\test.frag" />
+    <None Include="shaders\test.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PerlinNoise2D.h" />
@@ -120,6 +155,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)include\imgui</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

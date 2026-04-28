@@ -8,54 +8,78 @@
 
 #include "PerlinNoise2D.h"
 int main() { 
-    //TEST CZY DZIA�AJ� BIBLIOTEKI -- TRZEBA USUNAC
-    //John - dzila gg
+    
+	//Inicjalizacja GLFW
+	if (!glfwInit()) { return -1; }
 
-    if (!glfwInit()) return -1;
+	//Stworzenie okna
+	GLFWwindow* window = glfwCreateWindow(1920, 1080, "World Generator", NULL, NULL);
+	if (!window) {
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(window);
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	//Ustawienie głównego okna w WindowManagerze
+	WindowManager::getInstance().setMainWindow(window);
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "WorldGenerator", NULL, NULL);
-    if (!window) { glfwTerminate(); return -1; }
-    glfwMakeContextCurrent(window);
+	//Inicjalizacja GLAD
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		return -1;
+	}
+	
+	//Konfiguracja ImGui
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cout << "Failed to init GLAD" << std::endl;
-        return -1;
-    }
+	//Ustawienie stylu ImGui na ciemny
+	ImGui::StyleColorsDark();
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+	//Inicjalizacja backendów ImGui dla GLFW i OpenGL3
+	ImGui_ImplGlfw_InitForOpenGL(window, true); 
+	ImGui_ImplOpenGL3_Init("#version 330");
 
-    float terrainHeight = 60.0f;
-    float frequency = 0.01f;
+	//Ustawienie callbacków dla klawiatury i myszy które będą aktualizować stany klawiszy i przycisków myszy w InputManagerze co pozwoli na łatwe sprawdzanie tych stanów w logice gry
+	glfwSetKeyCallback(window, InputManager::keyCallback);
+	glfwSetMouseButtonCallback(window, InputManager::mouseButtonCallback);
+	glfwSetCursorPosCallback(window, InputManager::cursorPositionCallback);	
 
-    while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
+	//Włączenie testu głębokości co pozwala na poprawne renderowanie obiektów w 3D z uwzględnieniem ich odległości od kamery
+	glEnable(GL_DEPTH_TEST);
+	
+	//Włączenie cullingu co pozwala na pomijanie rysowania ścianek które są skierowane do tyłu względem kamery
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK); 
+	glFrontFace(GL_CCW); // Ustawienie kierunku wierzchołków przeciwnych do ruchu wskazówek zegara
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+	//Inicjalizaca sceny startowej programu
+	SceneManager sceneManager;
+	sceneManager.setScene(std::make_unique<WorldGeneratorScene>());
 
-        ImGui::Begin("Generator Settings");
-        ImGui::SliderFloat("Base Height", &terrainHeight, 0.0f, 256.0f);
-        ImGui::SliderFloat("Frequency", &frequency, 0.001f, 0.1f);
-        if (ImGui::Button("Regenerate World")) {
-        }
-        ImGui::End();
+	float lastFrameTime = 0.0f;
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+	//Główna pętla
+	while (!glfwWindowShouldClose(window)) {
+		//Obliczanie czasu deltaTime dla aktualizacji logiki gry i animacji co pozwala na płynne działanie gry niezależnie od liczby klatek na sekundę
+		float currentFrame = static_cast<float>(glfwGetTime());
+		float deltaTime = currentFrame - lastFrameTime;
+		lastFrameTime = currentFrame;
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		//Pobranie danych wejściowych i przetworzenie zdarzeń systemowych takich jak zamknięcie okna, zmiana rozmiaru itp Ta funkcja jest kluczowa dla interakcji użytkownika z aplikacją i musi być wywoływana w każdej klatce
+		glfwPollEvents();
 
-        glfwSwapBuffers(window);
-    }
+		//Czyszczenie ekranu i przygotowanie do renderowania (czyszczenie bufora kolorów i bufora głębokości)
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//Aktualizacja logiki gry i renderowanie sceny
+		sceneManager.update(deltaTime);
+		sceneManager.render();
+
+		//Wyświetlanie renderowanej sceny na ekranie
+		glfwSwapBuffers(window);
+	}
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
