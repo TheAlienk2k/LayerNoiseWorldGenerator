@@ -24,7 +24,7 @@ void World::addChunkColumn(int x, int z)
 	ChunkColumn* columnPtr = column.get();
 	columnsMap[position] = std::move(column);
 
-	columnPtr->generateMeshes(this);
+	columnPtr->generateMeshes(*this);
 
 	int xShift[] = { 1, -1, 0, 0 };
 	int zShift[] = { 0, 0, 1, -1 };
@@ -32,7 +32,7 @@ void World::addChunkColumn(int x, int z)
 	for (int i = 0; i < 4; i++) {
 		ChunkColumn* neighbor = getChunkColumn(x + xShift[i], z + zShift[i]);
 		if (neighbor) {
-			neighbor->generateMeshes(this);
+			neighbor->generateMeshes(*this);
 		}
 	}
 }
@@ -104,7 +104,7 @@ BlockID World::getBlock(int x, int y, int z) const
 void World::generateWorldMesh() 
 {
 	for(auto const& it : columnsMap) {
-		it.second->generateMeshes(this);
+		it.second->generateMeshes(*this);
 	}	
 }
 

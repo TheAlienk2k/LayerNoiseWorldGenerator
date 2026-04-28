@@ -9,7 +9,7 @@ class WorldRenderer
 private:
 	bool isColumnInRenderDistance(int columnX, int columnZ, int cameraColumnX, int cameraColumnZ) const;
 
-	void renderChunk(const Chunk* chunk, int columnX, int columnZ, int chunkY, Shader& shader) const;
+	void renderChunkColumn(const ChunkColumn* column, Shader& shader) const;
 
 public:
 	WorldRenderer();

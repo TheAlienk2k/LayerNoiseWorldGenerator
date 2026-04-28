@@ -1,6 +1,5 @@
-#include "world\ChunkColumn.h"
-#include "world\World.h"
-#include "Shader.h" 
+#include "world/ChunkColumn.h"
+#include "world/World.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -17,18 +16,20 @@ ChunkColumn::ChunkColumn(int x, int z) : columnX(x), columnZ(z)
 
 void ChunkColumn::setBlock(int x, int y, int z, BlockID blockID)
 {
-	if (y < 0 || y >= config.worldHeightInChunks * Chunk::CHUNK_SIZE) { return; }
+	if (y < 0 || y >= chunks.size() * Chunk::CHUNK_SIZE) { return; }
 	if (x < 0 || x >= Chunk::CHUNK_SIZE || z < 0 || z >= Chunk::CHUNK_SIZE) { return; }
 
 	int chunkIndex = y / Chunk::CHUNK_SIZE;
 	int localY = y % Chunk::CHUNK_SIZE;
 
 	chunks[chunkIndex]->setBlock(x, localY, z, blockID);
+
+	isRerenderNeeded = true;
 }
 
 BlockID ChunkColumn::getBlock(int x, int y, int z) const
 {
-	if (y < 0 || y >= config.worldHeightInChunks * Chunk::CHUNK_SIZE) { return 0; }
+	if (y < 0 || y >= chunks.size() * Chunk::CHUNK_SIZE) { return 0; }
 	if (x < 0 || x >= Chunk::CHUNK_SIZE || z < 0 || z >= Chunk::CHUNK_SIZE) { return 0; }
 
 	int chunkIndex = y / Chunk::CHUNK_SIZE;
@@ -39,18 +40,26 @@ BlockID ChunkColumn::getBlock(int x, int y, int z) const
 
 Chunk* ChunkColumn::getChunk(int yIndex) const 
 {
-	if (yIndex >= 0 && yIndex < config.worldHeightInChunks) {
+	if (yIndex >= 0 && yIndex < chunks.size()) {
 		return chunks[yIndex].get();
 	}
 	return nullptr;
 }
 
-void ChunkColumn::generateMeshes(const World* world)
+void ChunkColumn::generateMeshes(const World& world)
 {
-	ChunkColumn* frontColumn = world->getChunkColumn(columnX, columnZ + 1);
-	ChunkColumn* backColumn = world->getChunkColumn(columnX, columnZ - 1);
-	ChunkColumn* leftColumn = world->getChunkColumn(columnX - 1, columnZ);
-	ChunkColumn* rightColumn = world->getChunkColumn(columnX + 1, columnZ);
+	columnMesh.reset();
+
+	std::vector<float> columnVertices;
+	std::vector<uint32_t> columnIndices;
+	uint32_t indexOffset = 0;
+
+	columnVertices.reserve(Chunk::CHUNK_VOLUME * 5);
+
+	ChunkColumn* frontColumn = world.getChunkColumn(columnX, columnZ + 1);
+	ChunkColumn* backColumn = world.getChunkColumn(columnX, columnZ - 1);
+	ChunkColumn* leftColumn = world.getChunkColumn(columnX - 1, columnZ);
+	ChunkColumn* rightColumn = world.getChunkColumn(columnX + 1, columnZ);
 
 	for (int i = 0; i < chunks.size(); i++) {
 
@@ -60,7 +69,7 @@ void ChunkColumn::generateMeshes(const World* world)
 		}
 
 		Chunk* bottomNeighbor = nullptr;
-		if(i >0) {
+		if (i > 0) {
 			bottomNeighbor = chunks[i - 1].get();
 		}
 
@@ -80,26 +89,31 @@ void ChunkColumn::generateMeshes(const World* world)
 		}
 
 		Chunk* rightNeighbor = nullptr;
-		if(rightColumn) {
+		if (rightColumn) {
 			rightNeighbor = rightColumn->getChunk(i);
 		}
 
-		chunks[i]->generateMesh(topNeighbor, bottomNeighbor, frontNeighbor, backNeighbor, leftNeighbor, rightNeighbor);
+		int chunkYOffset = i * Chunk::CHUNK_SIZE;
+
+		chunks[i]->collectMeshData(columnVertices, columnIndices, indexOffset, chunkYOffset, topNeighbor, bottomNeighbor, frontNeighbor, backNeighbor, leftNeighbor, rightNeighbor);
+	}
+
+	if (!columnVertices.empty()) {
+		columnMesh = std::make_unique<Mesh>(columnVertices, columnIndices);
 	}
 
 	isMeshGenerated = true;
+	isRerenderNeeded = false;
 }
 
 void ChunkColumn::render(Shader* shader) const
 {
-	for(int i = 0; i < config.worldHeightInChunks; i++) {
-		glm::vec3 chunkPosition(columnX * Chunk::CHUNK_SIZE, i * Chunk::CHUNK_SIZE, columnZ * Chunk::CHUNK_SIZE);
-		
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), chunkPosition);
-		shader->setMatrix4("model", model);
+	if (!columnMesh) { return; }
 
-		chunks[i]->render();
-	}
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(columnX * Chunk::CHUNK_SIZE, 0, columnZ * Chunk::CHUNK_SIZE));
+	shader->setMatrix4("model", model);
+
+	columnMesh->draw();
 }
 
 int ChunkColumn::getX() const 
@@ -115,4 +129,9 @@ int ChunkColumn::getZ() const
 bool ChunkColumn::hasMesh() const 
 {
 	return isMeshGenerated;
+}
+
+bool ChunkColumn::needsRerender() const 
+{
+	return isRerenderNeeded;
 }

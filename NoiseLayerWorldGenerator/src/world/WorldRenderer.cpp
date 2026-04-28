@@ -23,14 +23,16 @@ void WorldRenderer::render(World& world, const Camera& camera, Shader& shader, f
 
 			ChunkColumn* column = world.getChunkColumn(columnX, columnZ);
 
-			if (column && column->hasMesh())
+			if (column)
 			{
-				for (int y = 0; y < config.worldHeightInChunks; y++) {
-					Chunk* chunk = column->getChunk(y);
+				if (!column->hasMesh() || column->needsRerender())
+				{
+					column->generateMeshes(world);
+				}
 
-					if (chunk && chunk->hasMesh()) {
-						renderChunk(chunk, column->getX(), column->getZ(), y, shader);
-					}
+				if (column->hasMesh())
+				{
+					renderChunkColumn(column, shader);
 				}
 			}
 
@@ -39,23 +41,11 @@ void WorldRenderer::render(World& world, const Camera& camera, Shader& shader, f
 	
 }
 
-bool WorldRenderer::isColumnInRenderDistance(int columnX, int columnZ, int cameraColumnX, int cameraColumnZ) const
-{
-	
-	if (std::abs(columnX - cameraColumnX) <= config.renderDistance &&
-		std::abs(columnZ - cameraColumnZ) <= config.renderDistance) 
-	{
-		return true;
-	}
 
-	return false;
-}
-
-void WorldRenderer::renderChunk(const Chunk* chunk, int columnX, int columnZ, int chunkY, Shader& shader) const
+void WorldRenderer::renderChunkColumn(const ChunkColumn* column, Shader& shader) const
 {
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(columnX * Chunk::CHUNK_SIZE, chunkY * Chunk::CHUNK_SIZE, columnZ * Chunk::CHUNK_SIZE));
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(column->getX() * Chunk::CHUNK_SIZE, 0, column->getZ() * Chunk::CHUNK_SIZE));
 	shader.setMatrix4("model", model);
 
-	chunk->render();
+	column->render(&shader);
 }

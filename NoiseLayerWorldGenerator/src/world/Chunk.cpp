@@ -26,69 +26,14 @@ Chunk::Chunk() : blocksTable(nullptr), fillBlockID(0)
 
 Chunk::~Chunk()
 {
-		delete[] blocksTable;
+
 }
 
-void Chunk::setBlock(int x, int y, int z, BlockID blockID)
+void Chunk::collectMeshData(std::vector<float>& vertices, std::vector<uint32_t>& indices, uint32_t& indexOffset, int chunkYOffset, Chunk* topNeighbor, Chunk* bottomNeighbor, Chunk* frontNeighbor, Chunk* backNeighbor, Chunk* leftNeighbor, Chunk* rightNeighbor) const
 {
-	//Sprawdzamy czy tablica bloków jest już zainicjalizowana
-	if (blocksTable == nullptr) {
-		//Jeśli nie jest a ID bloku który chcemy ustawić jest taki sam jak fillBlockID to
-		// znaczy że nie musimy tworzyć tablicy bo cały chunk jest już wypełniony tym blokiem
-		if (blockID == fillBlockID) { return; }
-
-		//Jeśli ID bloku jest różne od fillBlockID to musimy stworzyć tablicę i wypełnić ją wartością fillBlockID
-		blocksTable = new BlockID[CHUNK_VOLUME];
-		for(int i = 0; i < CHUNK_VOLUME; i++) {
-			blocksTable[i] = fillBlockID;
-		}
-	}
-
-	//Ustawiamy ID bloku w tablicy na podstawie jego pozycji w sekcji. Indeks obliczamy jako (x + y*16 + z*256)
-	blocksTable[x + (y << 4) + (z << 8)] = blockID;
-}
-
-BlockID Chunk::getBlock(int x, int y, int z) const
-{
-	//Sprawdzamy czy podane współrzędne są poza granicami sekcji. Jeśli tak to zwracamy 0 (PUSTY BLOK). Musimy to zrobić ponieważ metoda ta jest używana przez metodę generateMesh
-	if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) { return 0; }
-
-	//Sprawdzamy czy tablica bloków jest zainicjalizowana. Jeśli nie jest to znaczy że
-	// cały chunk jest wypełniony blokiem o ID fillBlockID więc zwracamy tę wartość
-	if (blocksTable == nullptr) { return fillBlockID; }
-
-	//Zwracamy ID bloku z tablicy na podstawie jego pozycji w sekcji. Indeks obliczamy jako (x + y*16 + z*256)
-	return blocksTable[x + (y << 4) + (z << 8)];
-}
-
-BlockID Chunk::getBlockFromNeighbor(Chunk* neighbor, int x, int y, int z) const
-{
-	// Jeśli sąsiad istnieje to pobieramy ID bloku z tego sąsiada na podstawie podanych współrzędnych. Jeśli sąsiad nie istnieje to zwracamy 0 (PUSTY BLOK)
-	if (neighbor) {
-		return neighbor->getBlock(x, y, z);
-	}
-	return 0;
-}
-
-void Chunk::generateMesh(Chunk* topNeighbor, Chunk* bottomNeighbor, Chunk* frontNeighbor, Chunk* backNeighbor, Chunk* leftNeighbor, Chunk* rightNeighbor)
-{
-	// Usuwamy starą siatkę jeśli istnieje
-	mesh.reset();
-
-	// Wektory do przechowywania danych wierzchołków i indeksów dla siatki
-	std::vector<float> vertices;
-	std::vector<uint32_t> indices;
-
-	// Zmienna do śledzenia aktualnego offsetu indeksów podczas generowania siatki
-	uint32_t indexOffset = 0;
-
-	//OPTYMALIZACAJ aby uniknąć wielokrotnych alokacji pamięci podczas dodawania wierzchołków i indeksów, rezerwujemy odpowiednią ilość pamięci w wektorach
-	vertices.reserve(CHUNK_VOLUME * 12); //zakładamy że zazwyczaj w chunku każdy blok będzie miał około 1 widoczną ściankę, a każda ścianka ma 4 wierzchołki po 3 współrzędne czyli 12
-	indices.reserve(CHUNK_VOLUME * 6 ); //dla jednej ścianki mamy 2 trójkąty po 3 indeksy czyli 6 indeksów
-
 	// Iterujemy przez wszystkie bloki w sekcji
-	for (int y = 0; y < CHUNK_SIZE; y++) {
-		for (int z = 0; z < CHUNK_SIZE; z++) {
+	for (int z = 0; z < CHUNK_SIZE; z++) {
+		for (int y = 0; y < CHUNK_SIZE; y++) {
 			for (int x = 0; x < CHUNK_SIZE; x++) {
 
 				// Pobieramy ID aktualnego bloku. Jeśli jest równy 0 (Pusty blok) to pomijamy go i przechodzimy do następnego bloku
@@ -149,6 +94,7 @@ void Chunk::generateMesh(Chunk* topNeighbor, Chunk* bottomNeighbor, Chunk* front
 						isFaceVisible = true;
 					}
 
+
 					// Jeśli ścianka jest widoczna to dodajemy jej wierzchołki do wektora wierzchołków
 					if (isFaceVisible) {
 
@@ -156,7 +102,7 @@ void Chunk::generateMesh(Chunk* topNeighbor, Chunk* bottomNeighbor, Chunk* front
 						for (int v = 0; v < 4; v++) {
 							// Dodajemy globalne współrzędne wierzchołka do wektora wierzchołków. Współrzędne lokalne ścianki są dodawane do globalnej pozycji bloku aby uzyskać globalne współrzędne wierzchołka
 							vertices.push_back(x + faceVertices[wall][v * 3 + 0]);
-							vertices.push_back(y + faceVertices[wall][v * 3 + 1]);
+							vertices.push_back(y + chunkYOffset + faceVertices[wall][v * 3 + 1]);
 							vertices.push_back(z + faceVertices[wall][v * 3 + 2]);
 						}
 
@@ -174,31 +120,49 @@ void Chunk::generateMesh(Chunk* topNeighbor, Chunk* bottomNeighbor, Chunk* front
 					}
 
 				}
-
 			}
 		}
-		
-		// Po zakończeniu iteracji przez wszystkie bloki ustawiamy flagę isMeshGenerated na true aby oznaczyć że siatka została wygenerowana
-		isMeshGenerated = true;
-	}
-
-	// Jeśli wygenerowano jakieś wierzchołki to tworzymy siatkę na podstawie tych wierzchołków i indeksów
-	if (!vertices.empty()) {
-		mesh = std::make_unique<Mesh>(vertices, indices);
 	}
 }
 
-//
-void Chunk::render() const
+void Chunk::setBlock(int x, int y, int z, BlockID blockID)
 {
-	// Jeśli siatka została wygenerowana to rysujemy ją
-	if (mesh) {
-		mesh->draw();
+	//Sprawdzamy czy tablica bloków jest już zainicjalizowana
+	if (blocksTable == nullptr) {
+		//Jeśli nie jest a ID bloku który chcemy ustawić jest taki sam jak fillBlockID to
+		// znaczy że nie musimy tworzyć tablicy bo cały chunk jest już wypełniony tym blokiem
+		if (blockID == fillBlockID) { return; }
+
+		//Jeśli ID bloku jest różne od fillBlockID to musimy stworzyć tablicę i wypełnić ją wartością fillBlockID
+		blocksTable = std::make_unique<BlockID[]>(CHUNK_VOLUME);
+		for(int i = 0; i < CHUNK_VOLUME; i++) {
+			blocksTable[i] = fillBlockID;
+		}
 	}
+
+	//Ustawiamy ID bloku w tablicy na podstawie jego pozycji w sekcji. Indeks obliczamy jako (x + y*16 + z*256)
+	blocksTable[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)] = blockID;
 }
 
-bool Chunk::hasMesh() const
+BlockID Chunk::getBlock(int x, int y, int z) const
 {
-	return isMeshGenerated;
+	//Sprawdzamy czy podane współrzędne są poza granicami sekcji. Jeśli tak to zwracamy 0 (PUSTY BLOK). Musimy to zrobić ponieważ metoda ta jest używana przez metodę generateMesh
+	if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) { return 0; }
+
+	//Sprawdzamy czy tablica bloków jest zainicjalizowana. Jeśli nie jest to znaczy że
+	// cały chunk jest wypełniony blokiem o ID fillBlockID więc zwracamy tę wartość
+	if (blocksTable == nullptr) { return fillBlockID; }
+
+	//Zwracamy ID bloku z tablicy na podstawie jego pozycji w sekcji. Indeks obliczamy jako (x + y*16 + z*256)
+	return blocksTable[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)];
+}
+
+BlockID Chunk::getBlockFromNeighbor(Chunk* neighbor, int x, int y, int z) const
+{
+	// Jeśli sąsiad istnieje to pobieramy ID bloku z tego sąsiada na podstawie podanych współrzędnych. Jeśli sąsiad nie istnieje to zwracamy 0 (PUSTY BLOK)
+	if (neighbor) {
+		return neighbor->getBlock(x, y, z);
+	}
+	return 0;
 }
 

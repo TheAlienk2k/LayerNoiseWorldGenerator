@@ -6,8 +6,9 @@ struct WorldConfig
 	float viewBegin = 0.1f;
 	float viewDistance = 1000.0f;
 
+	int worldSeed = 0;
 	int worldHeightInChunks = 16;
-	int renderDistance = 12;
+	int renderDistance = 16;
 };
 
 extern WorldConfig config;

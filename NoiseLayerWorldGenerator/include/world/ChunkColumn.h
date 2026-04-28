@@ -1,11 +1,13 @@
 #pragma once
-#include "world\Chunk.h"
+#include "Mesh.h"
+#include "Shader.h" 
+#include "BlockType.h"
 #include <vector>
-
-#include "WorldConfig.h"
+#include <memory>
+#include <cstdint>
 
 class World;
-class Shader;
+class Chunk;
 
 class ChunkColumn
 {
@@ -13,7 +15,10 @@ private:
 	int columnX;
 	int columnZ;
 
+	std::unique_ptr<Mesh> columnMesh;
+
 	bool isMeshGenerated = false;
+	bool isRerenderNeeded = false;
 
 	std::vector<std::unique_ptr<Chunk>> chunks;
 
@@ -26,12 +31,13 @@ public:
 
 	Chunk* getChunk(int yIndex) const;
 
-	void generateMeshes(const World* world);
+	void generateMeshes(const World& world);
 	void render(Shader* shader) const;
 
 	int getX() const;
 	int getZ() const;
 
 	bool hasMesh() const;
+	bool needsRerender() const;
 };
 
